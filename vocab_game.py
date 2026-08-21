@@ -22,9 +22,9 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.title("⏰ เกมเติมศัพท์จับเวลา (สุ่มโจทย์)")
+st.title("⏰ เกมเติมศัพท์จับเวลา (สุ่ม 10 ข้อ)")
 
-# คลังโจทย์ทั้งหมด
+# คลังโจทย์ทั้งหมด (สุ่มมาใช้ 10 ข้อ)
 QUESTION_BANK = [
     {"question": "An `a _ _ l e` a day keeps the doctor away. 🍎", "answer": "apple"},
     {"question": "Cats love to eat `f _ s h`. 🐟", "answer": "fish"},
@@ -32,15 +32,21 @@ QUESTION_BANK = [
     {"question": "A `d _ g` is a man's best friend. 🐶", "answer": "dog"},
     {"question": "The sun rises in the `e _ s t`. 🌅", "answer": "east"},
     {"question": "Rabbits love to eat `c _ r r _ t`. 🥕", "answer": "carrot"},
+    {"question": "Water is `h _ d r a t i n g`. 💧", "answer": "water"},
+    {"question": "Birds fly in the `s k _`. ☁️", "answer": "sky"},
+    {"question": "The earth is `r _ u n d`. 🌍", "answer": "round"},
+    {"question": "Fire is very `h _ t`. 🔥", "answer": "hot"},
+    {"question": "Ice is very `c _ l d`. 🧊", "answer": "cold"},
+    {"question": "Books are for `r _ a d i n g`. 📚", "answer": "reading"},
 ]
 
-# กำหนดจำนวนข้อที่ต้องการสุ่มเล่นในแต่ละรอบ (เช่น สุ่มมา 3 ข้อ จากทั้งหมด)
-TOTAL_QUESTIONS_PER_GAME = 3
+TOTAL_QUESTIONS_PER_GAME = 10
+TIME_PER_QUESTION = 5  # ข้อละ 5 วินาที
+TOTAL_TIME = TOTAL_QUESTIONS_PER_GAME * TIME_PER_QUESTION  # รวม 50 วินาที
 
 
 # 📌 ฟังก์ชันเริ่มเกมใหม่/เคลียร์ค่า
 def reset_game():
-    # สุ่มโจทย์แบบไม่ซ้ำกันตามจำนวนที่กำหนด
     st.session_state.selected_questions = random.sample(
         QUESTION_BANK, TOTAL_QUESTIONS_PER_GAME
     )
@@ -92,11 +98,11 @@ st.button("🎮 เริ่มเล่นเกมใหม่", on_click=rese
 
 # 2. แถบแสดงเวลานับถอยหลัง
 if "start" in st.session_state and not st.session_state.is_ended:
-    time_left = int(45 - (time.time() - st.session_state.start))
+    time_left = int(TOTAL_TIME - (time.time() - st.session_state.start))
 
     if time_left > 0:
         st.markdown(
-            f"<p class='big-font' style='color:red;'>⏳ เหลือเวลา: {time_left} วินาที</p>",
+            f"<p class='big-font' style='color:red;'>⏳ เหลือเวลารวม: {time_left} วินาที (ข้อละ 5 วินาที)</p>",
             unsafe_allow_html=True,
         )
     else:
@@ -110,7 +116,6 @@ if not st.session_state.is_ended:
     curr_idx = st.session_state.current_index
     q_data = st.session_state.selected_questions[curr_idx]
 
-    # แสดงลำดับข้อและคำถามขนาดใหญ่
     st.markdown(
         f"<p class='big-font'>ข้อที่ {curr_idx + 1} / {TOTAL_QUESTIONS_PER_GAME}</p>",
         unsafe_allow_html=True,
@@ -120,12 +125,10 @@ if not st.session_state.is_ended:
         unsafe_allow_html=True,
     )
 
-    # ช่องกรอกคำตอบ
     user_input = st.text_input(
         "ตอบคำถามที่นี่:", key=f"input_{curr_idx}", value=""
     )
 
-    # ปุ่มถัดไป / ส่งคำตอบ
     if curr_idx < TOTAL_QUESTIONS_PER_GAME - 1:
         if st.button("➡️ ข้อถัดไป"):
             st.session_state.user_answers.append(user_input)
