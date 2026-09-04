@@ -1,151 +1,103 @@
-import random
+นี่คือสคริปต์ภาษา Python จากรูปภาพทั้ง 3 ภาพ โดยทำการเปลี่ยนชื่อในบรรทัดสุดท้ายเป็น "นาย จารุภัทร อรุณสิทธิ์ เลขที่ 9 ม.4/6" ให้เรียบร้อยแล้วครับ:
+
+Python
 import time
 import streamlit as st
 
-# กำหนดสไตล์ CSS เพิ่มขนาดตัวหนังสือและช่องกรอกข้อมูล
-st.markdown(
-    """
-    <style>
-    .big-font {
-        font-size: 26px !important;
-        font-weight: bold;
-    }
-    .question-font {
-        font-size: 22px !important;
-        color: #2E86C1;
-    }
-    input {
-        font-size: 20px !important;
-    }
-    </style>
-""",
-    unsafe_allow_html=True,
-)
+st.title("⏰ เกมเติมศัพท์จับเวลา")
 
-st.title("⏰ เกมเติมศัพท์จับเวลา (สุ่ม 10 ข้อ)")
+# 1. กำหนดค่าเริ่มต้นใน session_state ถ้ายินไม่มี
+if "ans1_val" not in st.session_state:
+    st.session_state.ans1_val = ""
+if "ans2_val" not in st.session_state:
+    st.session_state.ans2_val = ""
 
-# คลังโจทย์ทั้งหมด (สุ่มมาใช้ 10 ข้อ)
-QUESTION_BANK = [
-    {"question": "An `a _ _ l e` a day keeps the doctor away. 🍎", "answer": "apple"},
-    {"question": "Cats love to eat `f _ s h`. 🐟", "answer": "fish"},
-    {"question": "Monkeys love to eat `b _ n _ n a`. 🍌", "answer": "banana"},
-    {"question": "A `d _ g` is a man's best friend. 🐶", "answer": "dog"},
-    {"question": "The sun rises in the `e _ s t`. 🌅", "answer": "east"},
-    {"question": "Rabbits love to eat `c _ r r _ t`. 🥕", "answer": "carrot"},
-    {"question": "Water is `h _ d r a t i n g`. 💧", "answer": "water"},
-    {"question": "Birds fly in the `s k _`. ☁️", "answer": "sky"},
-    {"question": "The earth is `r _ u n d`. 🌍", "answer": "round"},
-    {"question": "Fire is very `h _ t`. 🔥", "answer": "hot"},
-    {"question": "Ice is very `c _ l d`. 🧊", "answer": "cold"},
-    {"question": "Books are for `r _ a d i n g`. 📚", "answer": "reading"},
-]
-
-TOTAL_QUESTIONS_PER_GAME = 10
-TIME_PER_QUESTION = 5  # ข้อละ 5 วินาที
-TOTAL_TIME = TOTAL_QUESTIONS_PER_GAME * TIME_PER_QUESTION  # รวม 50 วินาที
-
-
-# 📌 ฟังก์ชันเริ่มเกมใหม่/เคลียร์ค่า
+# 📌 ฟังก์ชันเคลียร์ค่าเมื่อกดปุ่มเริ่มต้นใหม่
 def reset_game():
-    st.session_state.selected_questions = random.sample(
-        QUESTION_BANK, TOTAL_QUESTIONS_PER_GAME
-    )
-    st.session_state.current_index = 0
-    st.session_state.user_answers = []
-    st.session_state.start = time.time()
-    st.session_state.is_ended = False
+    st.session_state.ans1_val = ""  # เคลียร์ค่าช่องข้อ 1
+    st.session_state.ans2_val = ""  # เคลียร์ค่าช่องข้อ 2
+    st.session_state.start = time.time()  # เริ่มเวลาใหม่
+    st.session_state.is_ended = False  # ปิด Dialog
 
-
-# เริ่มต้น Session State
-if "selected_questions" not in st.session_state:
-    reset_game()
-
-
-# 📌 ฟังก์ชัน แสดง Dialog สรุปผล
+# --------------------------------------------------
+# 📌 ฟังก์ชัน MessageBox (Dialog)
+# --------------------------------------------------
 @st.dialog("📊 สรุปผลการเล่นเกม")
-def show_result_dialog():
+def show_result_dialog(ans1, ans2):
     st.balloons()
     score = 0
 
-    st.markdown("<p class='big-font'>สรุปคะแนนของคุณ:</p>", unsafe_allow_html=True)
+    u_ans1 = ans1.strip().lower()
+    u_ans2 = ans2.strip().lower()
 
-    for idx, q_data in enumerate(st.session_state.selected_questions):
-        user_ans = (
-            st.session_state.user_answers[idx]
-            if idx < len(st.session_state.user_answers)
-            else ""
-        )
-        if user_ans.strip().lower() == q_data["answer"]:
-            st.success(f"✅ ข้อ {idx+1}: ถูกต้อง")
-            score += 1
-        else:
-            st.error(
-                f"❌ ข้อ {idx+1}: ไม่ถูกต้อง (เฉลย: {q_data['answer']} | คุณตอบ: '{user_ans}')"
-            )
-
-    st.info(f"🏆 ได้คะแนนรวม: {score} / {TOTAL_QUESTIONS_PER_GAME} คะแนน")
-
-    if score == TOTAL_QUESTIONS_PER_GAME:
-        st.success("🎉 Perfect! You win!")
+    # ตรวจข้อ 1
+    if u_ans1 == "apple":
+        st.success("✅ ข้อ 1: ถูกต้อง")
+        score += 1
     else:
-        st.error("💀 Try Again!")
+        st.error(f"❌ ข้อ 1: ยังไม่ถูกต้อง (คุณตอบ '{u_ans1}')")
 
+    # ตรวจข้อ 2
+    if u_ans2 == "fish":
+        st.success("✅ ข้อ 2: ถูกต้อง")
+        score += 1
+    else:
+        st.error(f"❌ ข้อ 2: ยังไม่ถูกต้อง (คุณตอบ '{u_ans2}')")
+
+    # ✏️ [พื้นที่สำหรับนักเรียน]: เพิ่มตรวจข้อ 3, 4 ตรงนี้
+
+    st.info(f"🏆 ได้คะแนนรวม: {score} คะแนน")
+
+    if score == 2:
+        st.success("🎉 You win!")
+    else:
+        st.error("💀 You lose!")
 
 # --------------------------------------------------
 # 1. ปุ่มเริ่มเล่นเกม
 # --------------------------------------------------
-st.button("🎮 เริ่มเล่นเกมใหม่", on_click=reset_game)
+st.button("🎮 เริ่มเล่นเกม", on_click=reset_game)
 
 # 2. แถบแสดงเวลานับถอยหลัง
-if "start" in st.session_state and not st.session_state.is_ended:
-    time_left = int(TOTAL_TIME - (time.time() - st.session_state.start))
+if "start" in st.session_state and not st.session_state.get("is_ended", False):
+    time_left = int(30 - (time.time() - st.session_state.start))
 
     if time_left > 0:
-        st.markdown(
-            f"<p class='big-font' style='color:red;'>⏳ เหลือเวลารวม: {time_left} วินาที (ข้อละ 5 วินาที)</p>",
-            unsafe_allow_html=True,
-        )
+        st.error(f"⏳ เหลือเวลา: {time_left} วินาที")
     else:
         st.session_state.is_ended = True
         st.rerun()
 
 st.divider()
 
-# 3. แสดงโจทย์ทีละข้อ
-if not st.session_state.is_ended:
-    curr_idx = st.session_state.current_index
-    q_data = st.session_state.selected_questions[curr_idx]
+# 3. ช่องรับคำตอบ (ใช้ value ผูกกับตัวแปรตรงๆ เพื่อสั่งเคลียร์ได้)
+ans1 = st.text_input(
+    "ข้อ 1: An `a _ _ l e` a day keeps the doctor away. 🍎",
+    value=st.session_state.ans1_val,
+)
+ans2 = st.text_input(
+    "ข้อ 2: Cats love to eat `f _ _ s h`. 🐟",
+    value=st.session_state.ans2_val,
+)
 
-    st.markdown(
-        f"<p class='big-font'>ข้อที่ {curr_idx + 1} / {TOTAL_QUESTIONS_PER_GAME}</p>",
-        unsafe_allow_html=True,
-    )
-    st.markdown(
-        f"<p class='question-font'>{q_data['question']}</p>",
-        unsafe_allow_html=True,
-    )
+# อัปเดตค่าล่าสุดเข้าตัวแปร
+st.session_state.ans1_val = ans1
+st.session_state.ans2_val = ans2
 
-    user_input = st.text_input(
-        "ตอบคำถามที่นี่:", key=f"input_{curr_idx}", value=""
-    )
+# ✏️ [พื้นที่สำหรับนักเรียน]: เพิ่มข้อ 3, 4 ตรงนี้
 
-    if curr_idx < TOTAL_QUESTIONS_PER_GAME - 1:
-        if st.button("➡️ ข้อถัดไป"):
-            st.session_state.user_answers.append(user_input)
-            st.session_state.current_index += 1
-            st.rerun()
-    else:
-        if st.button("📥 ส่งคำตอบทั้งหมด"):
-            st.session_state.user_answers.append(user_input)
-            st.session_state.is_ended = True
-            st.rerun()
+# 4. ปุ่มส่งคำตอบ
+if "start" in st.session_state and not st.session_state.get("is_ended", False):
+    if st.button("📥 ส่งคำตอบ"):
+        st.session_state.is_ended = True
+        st.rerun()
 
     time.sleep(1)
     st.rerun()
 
-# 4. แสดง Dialog ผลลัพธ์เมื่อจบเกม
-if st.session_state.is_ended:
-    show_result_dialog()
+# 5. แสดง Dialog ผลลัพธ์
+if st.session_state.get("is_ended", False):
+    show_result_dialog(ans1, ans2)
 
 st.divider()
-st.write("นายจารุภัทร อรุณสิทธิ์ เลขที่ 9 ม.4/6")
+st.write("นาย จารุภัทร อรุณสิทธิ์ เลขที่ 9 ม.4/6")
